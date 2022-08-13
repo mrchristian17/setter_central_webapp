@@ -1,4 +1,7 @@
 import React, { useState } from 'react';
+import { db } from './firebase';
+import { setDoc, doc, collection } from 'firebase/firestore';
+
 
 export default function App() {
 	const questions = [
@@ -6,8 +9,8 @@ export default function App() {
 			questionText: 'How many years of experience do you have?',
 			responseOptions: [
 				{ answerText: '0' },
-				{ answerText: '1'},
-				{ answerText: '2'},
+				{ answerText: '1' },
+				{ answerText: '2' },
 				{ answerText: '3+'},
 			],
 		},
@@ -16,7 +19,8 @@ export default function App() {
 	const [currentQuestion, setCurrentQuestion] = useState(0);
 	const [showThankYouMessage, setShowScore] = useState(false);
 
-	const handleAnswerOptionClick = () => {
+	const handleOptionClick = (response:string) => {
+    addResponseToDB(response);
 
 		const nextQuestion = currentQuestion + 1;
 		if (nextQuestion < questions.length) {
@@ -25,6 +29,17 @@ export default function App() {
 			setShowScore(true);
 		}
 	};
+
+  const addResponseToDB = async (response:string) => {
+    let collectionRef = collection(db, 'response');
+    let docRef = doc(collectionRef);
+
+    await setDoc(docRef, {
+      response: response,
+    }).then(()=> {
+      console.log("Added to db");
+    }).catch((error) => alert(error.message))
+  }
 	return (
 		<div className='app'>
 			{showThankYouMessage ? (
@@ -41,7 +56,7 @@ export default function App() {
 					</div>
 					<div className='response-section'>
 						{questions[currentQuestion].responseOptions.map((responseOption) => (
-							<button onClick={() => handleAnswerOptionClick()}>{responseOption.answerText}</button>
+							<button onClick={() => handleOptionClick(responseOption.answerText)}>{responseOption.answerText}</button>
 						))}
 					</div>
 				</>
